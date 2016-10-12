@@ -1,0 +1,122 @@
+<!doctype html>
+<head>
+<meta charset="utf-8">
+<title>Accessible Modal</title>
+
+<style>
+[role=dialog] {display: none;}
+[role=dialog].show {display: block;}
+</style>
+
+<script src="jquery.min.js"></script>
+
+<script>
+$(document).ready (function () {
+var focusableSelector = "[tabindex=0],button,input,a";
+var $dialog = $("[role=dialog]");
+
+$(document).on ("click", ".open,.launch-modal,.open-modal", function (e) {
+var launcher = e.target;
+var modalSelector = $(launcher).attr ("data-modal");
+
+$(modalSelector).trigger ("open", launcher);
+return false;
+}); // launch
+
+// default modal actions
+$dialog.on ("open", function (e, launcher) {
+$(this).addClass ("show")
+.data ("launcher", launcher)
+.find (".close").focus ();
+
+}).on ("close", function (e) {
+$(this).removeClass ("show")
+.data ("launcher").focus ();
+
+}).on ("click", ".close,.cancel", function (e) {
+$(this).trigger ("close");
+
+}).on ("keydown", function (e) {
+key = e.which || e.keyCode;
+if (key === 27) {
+$(".close", this).trigger ("click");
+return false;
+} // if
+
+return true;
+}); // default actions
+
+
+// keep keyboard focus within modal
+$dialog.on ("focusin", function (e) {
+var $modal = $(this);
+var $focusableElements = $modal.find (focusableSelector);
+var element = e.target;
+var first = $focusableElements.first()[0];
+var last = $focusableElements.last()[0];
+
+e.stopImmediatePropagation ();
+e.stopPropagation ();
+if (element === first) {
+$modal.data ("focus", last);
+//alert ("last");
+
+} else if (element === last) {
+$modal.data ("focus", first);
+//alert ("first");
+} // if
+
+return true;
+}); // focusin and focusout on modal
+
+$(document).on ("focusin", function (e) {
+var $showing = $dialog.filter (":visible").first();
+
+if ($showing.length === 1) {
+$showing.data ("focus").focus ();
+return false;
+} // if
+
+return true;
+}); // focusin
+
+}); // ready
+
+</script>
+</head>
+<body>
+<h1>Test</h1>
+<p><a href="#">... dummy link ...</a></p>
+<button class="open" data-modal="#my-modal">Open modal</button>
+
+<div id="my-modal" class="modal" role="dialog"
+aria-labelledby="modal-title" aria-describedby="modal-body">
+
+<!-- this will re-enable screen reader navigation turned off by the dialog role -->
+<div class="modal-wrapper" role="document">
+
+<div class="header">
+<h2 id="modal-title">Include a Usable Title Here</h2>
+<button class="close" aria-label="close">X</button>
+</div><!-- header -->
+
+<div id="modal-body" class="body">
+<p>All text in here will be read automatically when an object within this modal gains focus.
+</p><p>
+This is made possible by the interaction of the dialog role and aria-describedby attribute on the modal container.
+</p>
+</div><!-- body -->
+
+<div class="controls">
+<!-- place any other dialog controls here -->
+<button class="ok">OK</button>
+<button class="cancel">Cancel</button>
+</div>
+
+</div><!-- modal-wrapper -->
+</div><!-- modal -->
+
+<p><a href="#">... dummy link ...</a></p>
+
+</body>
+</html>
