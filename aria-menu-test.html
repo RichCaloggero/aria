@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+<p><a href="#">Dummy Skip Link</a></p>
+<nav id="myMenu">
+</nav>
+
+<main>
+<p>... dummy content ...</p>
+<p><a href="#">Dummy Link</a></p>
+</main>
+
+<script>
+const $ = document.querySelector.bind(document);
+const $$ = document.querySelectorAll.bind(document);
+
+const menuData = [
+{label: "about", children: [
+{label: "directory"}
+] // about.children
+}, // about
+{label: "faculty and research", children: [
+{label: "faculty"},
+{label: "areas of research", children: [
+{label: "chemical biology"},
+{label: "energy and sustainability"},
+{label: "inorganic"}
+] // research areas children
+} // research areas
+] // faculty and research children
+} // faculty and research
+] // menuData
+
+const menuContainer = $("#myMenu");
+const menu = createMenuBar(menuData);
+menuContainer.appendChild(menu);
+menuContainer.addEventListener("keydown", keyboardHandler);
+setFocus(menu.children[0]);
+
+function createMenuBar (data) {
+if (!(data instanceof Array)) return null;
+const ul = document.createElement("ul");
+return createMenu(data, ul, "menubar");
+} // createMenubar
+
+function createMenu (data, node, role) {
+node.setAttribute ("role", role);
+data.forEach (item => {
+node.appendChild(
+createMenuItem (item, document.createElement("li"))
+); // appendChild
+});
+
+return node;
+} // createMenu
+
+function createMenuItem (data, node) {
+const label = document.createTextNode(data.label);
+const link = document.createElement("a");
+link.appendChild(label);
+link.setAttribute("href", "#");
+link.setAttribute("tabindex", "-1");
+link.setAttribute ("role", "menuitem");
+node.appendChild (link);
+node.setAttribute("role", "presentation");
+
+if (data.children) {
+link.setAttribute("aria-haspopup", "true");
+node.appendChild(createMenu(data.children, document.createElement("ul"), "menu"));
+} // if
+
+return node;
+} // createMenuItem
+
+function keyboardHandler (e) {
+const key = e.key;
+const start = e.target.parentElement;
+let node = start;
+
+switch (key) {
+case "ArrowDown": node = nextItem(node); break;
+case "ArrowUp": node = previousItem(node); break;
+
+case "ArrowRight": node = moveDown(node); break;
+case "ArrowLeft": node = moveUp(node); break;
+default: return true;
+} // switch
+
+if (node && node !== start) setFocus(node);
+} // keyboardHandler
+
+function nextItem (node) {
+return node.nextElementSibling;
+} // nextItem
+
+function previousItem (node) {
+return node.previousElementSibling;
+} // nextItem
+
+function moveDown (node) {
+return submenuNode(node).children[0];
+} // openMenu
+
+function moveUp (node) {
+if (parentMenuNode(node).getAttribute("role") === "menubar") return null;
+return parentMenuItemNode(node);
+} // closeMenu
+
+function setFocus (node) {
+$$("[role='menuitem']").forEach (x => x.setAttribute("tabindex", "-1"));
+labelNode(node).removeAttribute("tabindex");
+labelNode(node).focus();
+} // setFocus
+
+function labelNode(node) {return node.children[0];}
+function submenuNode(node) {return node.children[1];}
+function parentMenuNode (node) {return node.parentElement;}
+function parentMenuItemNode (node) {return parentMenuNode(node).parentElement;}
+
+</script>
+
+</body>
+</html>
