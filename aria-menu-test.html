@@ -40,6 +40,7 @@ const menu = createMenuBar(menuData);
 menuContainer.appendChild(menu);
 menuContainer.addEventListener("keydown", keyboardHandler);
 menuContainer.addEventListener("click", activationHandler);
+$$("[role='menu'], [role='menubar']").forEach(n => n.style.listStyleType = "none");
 setFocus(menu.children[0]);
 
 function createMenuBar (data) {
