@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>ARIA menu test</title>
+<title>ARIA - menu test - focus on LI</title>
 </head>
 <body>
 <p><a href="#">Dummy Skip Link</a></p>
@@ -63,14 +63,16 @@ function createMenuItem (data, node) {
 const label = document.createTextNode(data.label);
 const link = document.createElement("a");
 link.appendChild(label);
-link.setAttribute("href", "#");
-link.setAttribute("tabindex", "-1");
-link.setAttribute ("role", "menuitem");
+//link.setAttribute("href", "#");
+//link.setAttribute("tabindex", "-1");
+//link.setAttribute ("role", "menuitem");
 node.appendChild (link);
-node.setAttribute("role", "presentation");
+//node.setAttribute("role", "presentation");
 
+node.setAttribute("role", "menuitem");
 if (data.children) {
-link.setAttribute("aria-haspopup", "true");
+//link.setAttribute("aria-haspopup", "true");
+node.setAttribute("aria-haspopup", "true");
 node.appendChild(createMenu(data.children, document.createElement("ul"), "menu"));
 } // if
 
@@ -79,7 +81,8 @@ return node;
 
 function keyboardHandler (e) {
 const key = e.key;
-const start = e.target.parentElement;
+//const start = e.target.parentElement;
+const start = e.target;
 let node = start;
 
 switch (key) {
@@ -88,6 +91,9 @@ case "ArrowUp": node = previousItem(node); break;
 
 case "ArrowRight": node = moveDown(node); break;
 case "ArrowLeft": node = moveUp(node); break;
+
+case "Enter": case " ": return activate(node);
+
 default: return true;
 } // switch
 
@@ -96,9 +102,14 @@ if (node && node !== start) setFocus(node);
 
 function activationHandler (e) {
 const node = e.target;
-alert (`You clicked: (${node.nodeName}) ${node.textContent}.`);
+alert (`You clicked: (${node.nodeName}) ${labelNode(node).textContent}.`);
 return false;
 } // activationHandler
+
+function activate (node) {
+node.dispatchEvent(new CustomEvent("click", {bubbles: true}));
+return false;
+} // activate
 
 function nextItem (node) {
 return node.nextElementSibling;
@@ -119,8 +130,10 @@ return parentMenuItemNode(node);
 
 function setFocus (node) {
 $$("[role='menuitem']").forEach (x => x.setAttribute("tabindex", "-1"));
-labelNode(node).removeAttribute("tabindex");
-labelNode(node).focus();
+//labelNode(node).removeAttribute("tabindex");
+//labelNode(node).focus();
+node.setAttribute ("tabindex", "0");
+node.focus();
 } // setFocus
 
 function labelNode(node) {return node.children[0];}
