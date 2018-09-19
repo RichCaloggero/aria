@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ARIA - menu test - tab navigation</title>
+</head>
+<body>
+<p><a href="#">Dummy Skip Link</a></p>
+<nav id="myMenu">
+</nav>
+
+<main>
+<p>... dummy content ...</p>
+<p><a href="#">Dummy Link</a></p>
+</main>
+
+<script>
+const $ = document.querySelector.bind(document);
+const $$ = document.querySelectorAll.bind(document);
+
+const menuData = [
+{label: "about", children: [
+{label: "directory"}
+] // about.children
+}, // about
+{label: "faculty and research", children: [
+{label: "faculty"},
+{label: "areas of research", children: [
+{label: "chemical biology"},
+{label: "energy and sustainability"},
+{label: "inorganic"}
+] // research areas children
+} // research areas
+] // faculty and research children
+} // faculty and research
+] // menuData
+
+const menuContainer = $("#myMenu");
+const menu = createMenus(menuData);
+menuContainer.appendChild(menu);
+
+const focusable = menuContainer.querySelectorAll("a");
+focusable.forEach(n => n.addEventListener ("focus", focusHandler));
+focusable.forEach(n => n.addEventListener ("blur", unfocusHandler));
+
+function createMenus (data) {
+if (!(data instanceof Array)) return null;
+const ul = document.createElement("ul");
+return createMenu(data, ul, 2, "top level");
+} // createMenus
+
+function createMenu (data, node, headingLevel, topLevel) {
+data.forEach (item => {
+node.appendChild(
+createMenuItem (item, document.createElement("li"), headingLevel, topLevel)
+); // appendChild
+});
+
+node.setAttribute ("style", "list-style-type: none;");
+if (topLevel) node.classList.add("top-level");
+else closeMenu(node);
+return node;
+} // createMenu
+
+function createMenuItem (data, node, headingLevel, topLevel) {
+const label = document.createTextNode(data.label);
+const link = document.createElement("a");
+link.setAttribute("href", "#");
+link.appendChild(label);
+
+if (data.children) {
+if (topLevel) {
+const heading = document.createElement ("h" + headingLevel.toString());
+heading.appendChild(link);
+node.appendChild(heading);
+} else {
+node.appendChild(link);
+} // if
+
+node.appendChild(createMenu(data.children, document.createElement("ul"), headingLevel+1));
+} else {
+node.appendChild (link);
+} // if
+
+return node;
+} // createMenuItem
+
+function focusHandler (e) {
+const node = e.target;
+const menuItem = e.target.closest("li");
+if (menuItem.children.length > 1) {
+console.log ("focus: ", menuItem.children[0].textContent);
+openMenu (menuItem.children[1]);
+} // if
+} // focusHandler
+
+function unfocusHandler (e) {
+const node = e.target;
+const menuItem = e.target.closest("li");
+const menu = e.target.closest("ul");
+const active = activeElement();
+if (active || menu.classList.contains("top-level")) return;
+closeMenu(menuItem);
+alert("closing");
+} // unfocusHandler
+
+function activeElement () {
+return document.activeElement && document.activeElement !== document.body && document.activeElement !== document? document.activeElement : null;
+} // activeElement
+
+function activationHandler (e) {
+const node = e.target;
+alert (`You clicked: (${node.nodeName}) ${labelNode(node).textContent}.`);
+return false;
+} // activationHandler
+
+function openMenu (node) {
+node.style.display = "block";
+} // openMenu
+
+function closeMenu (node) {
+node.style.display = "none";
+} // closeMenu
+
+function labelNode(node) {return node.children[0];}
+function submenuNode(node) {return node.children[1];}
+function parentMenuNode (node) {return node.parentElement;}
+function parentMenuItemNode (node) {return parentMenuNode(node).parentElement;}
+
+</script>
+
+</body>
+</html>
